@@ -22,4 +22,6 @@ cabal.project.local~
 .ghc.environment.*
 .stack-work/
 success-failure-haskell.cabal
+.idea/
+success-failure-haskell.iml
 *~
