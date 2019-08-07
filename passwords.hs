@@ -41,9 +41,18 @@ validatePassword (Password password) =
   >>= requireAlphaNum
   >>= checkPasswordLength
 
+validateUsername :: Username -> Either Error Username
+validateUsername (Username username) =
+  cleanWhitespace username
+  >>= requireAlphaNum
+  >>= checkUsernameLength
+
 main :: IO ()
 main =
   do
+    putStr "Please enter a username.\n> "
+    username <- Username <$> getLine
+    print (validateUsername username)
     putStr "Please enter a password.\n> "
     password <- Password <$> getLine
     print (validatePassword password)
