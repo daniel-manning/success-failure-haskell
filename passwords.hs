@@ -10,6 +10,9 @@ newtype Error = Error String
 newtype Username = Username String
     deriving Show
 
+data User = User Username Password
+    deriving Show
+
 checkLength :: Int -> String ->  Either Error String
 checkLength maxLength input =
     case (length input > maxLength) of
@@ -48,12 +51,17 @@ validateUsername (Username username) =
   >>= requireAlphaNum
   >>= checkUsernameLength
 
+makeUser :: Username -> Password -> Either Error User
+makeUser username password = User
+                             <$> validateUsername username
+                             <*> validatePassword password
+
+
 main :: IO ()
 main =
   do
     putStr "Please enter a username.\n> "
     username <- Username <$> getLine
-    print (validateUsername username)
     putStr "Please enter a password.\n> "
     password <- Password <$> getLine
-    print (validatePassword password)
+    print (makeUser username password)
