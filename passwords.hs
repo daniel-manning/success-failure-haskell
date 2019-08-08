@@ -10,17 +10,18 @@ newtype Error = Error String
 newtype Username = Username String
     deriving Show
 
+checkLength :: Int -> String ->  Either Error String
+checkLength maxLength input =
+    case (length input > maxLength) of
+        True -> Left (Error "Input cannot be longer than maximum length.")
+        False -> Right input
+
 checkPasswordLength :: String -> Either Error Password
-checkPasswordLength password =
-    case (length password > 20) of
-        True -> Left (Error "Your password cannot be longer than 20 characters.")
-        False -> Right (Password password)
+checkPasswordLength password = Password <$> checkLength 20 password
+
 
 checkUsernameLength :: String -> Either Error Username
-checkUsernameLength username =
-    case (length username > 15) of
-        True -> Left (Error "Username cannot be longer than 15 characters.")
-        False -> Right (Username username)
+checkUsernameLength username = Username <$> checkLength 15 username
 
 requireAlphaNum :: String -> Either Error String
 requireAlphaNum xs =
