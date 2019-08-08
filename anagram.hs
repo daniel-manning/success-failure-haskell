@@ -18,5 +18,5 @@ checkAnagram s1 s2 = (sort s1) == (sort s2)
 
 main :: IO()
 main = do
-         result <- (pure checkAnagram) <*> promptWord1 <*> promptWord2
+         result <- checkAnagram <$> promptWord1 <*> promptWord2
          print result
