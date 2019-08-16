@@ -6,9 +6,15 @@ import Data.Validation
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import Data.Text (Text)
+import Data.List.NonEmpty (NonEmpty ((:|)))
+import qualified Data.List.NonEmpty as NE
 
-newtype Error = Error [Text]
+
+newtype Error = Error (NonEmpty Text)
     deriving (Semigroup, Show)
+
+--instance Semigroup Error where
+--    Error x <> Error y = Error (x <> T.pack("\n") <> y)
 
 newtype Password = Password Text
     deriving Show
@@ -22,7 +28,7 @@ data User = User Username Password
 checkLength :: Int -> Text ->  Validation Error Text
 checkLength maxLength input =
     case (T.length input > maxLength) of
-        True -> Failure (Error ["Input cannot be longer than maximum length."])
+        True -> Failure (constructError "Input cannot be longer than maximum length.")
         False -> Success input
 
 checkPasswordLength :: Text -> Validation Error Password
@@ -35,13 +41,13 @@ checkUsernameLength username = Username <$> checkLength 15 username
 requireAlphaNum :: Text -> Validation Error Text
 requireAlphaNum xs =
     case (T.all isAlphaNum xs) of
-        False -> Failure (Error ["Cannot contain white space or special characters."])
+        False -> Failure (constructError "Cannot contain white space or special characters.")
         True -> Success xs
 
 cleanWhitespace :: Text -> Validation Error Text
 cleanWhitespace t =
     case T.null(T.strip t) of
-        True -> Failure (Error ["Cannot be empty."])
+        True -> Failure (constructError "Cannot be empty.")
         False -> Success (T.strip t)
 
 validatePassword :: Password -> Validation Error Password
@@ -62,14 +68,14 @@ validateUsername (Username username) =
 passwordErrors :: Password -> Validation Error Password
 passwordErrors password =
     case validatePassword password of
-        Failure err -> Failure (Error ["Invalid password:"]
+        Failure err -> Failure (constructError "Invalid password:"
                                 <> err)
         Success password2 -> Success password2
 
 usernameErrors :: Username -> Validation Error Username
 usernameErrors username =
     case validateUsername username of
-        Failure err -> Failure (Error ["Invalid username:"]
+        Failure err -> Failure (constructError "Invalid username:"
                                 <> err)
         Success username -> Success username
 
@@ -81,11 +87,15 @@ makeUser username password = User
 display :: Username -> Password -> IO()
 display name password =
     case makeUser name password of
-         Failure err -> putStr (unlines (errorCoerce err))
+         Failure err -> putStrLn (unlines (NE.toList (errorCoerce err)))
          Success (User (Username name) password2)-> putStrLn ("Welcome, " ++ T.unpack(name))
 
-errorCoerce :: Error -> [String]
-errorCoerce (Error err) = map T.unpack err
+errorCoerce :: Error -> NonEmpty String
+errorCoerce (Error err) = NE.map T.unpack err
+
+constructError :: String -> Error
+constructError msg = Error (T.pack(msg) :| [])
+
 
 main :: IO ()
 main =
