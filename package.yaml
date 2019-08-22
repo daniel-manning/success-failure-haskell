@@ -1,8 +1,8 @@
 name:                success-failure-haskell
 version:             0.1.0.0
-github:              "githubuser/success-failure-haskell"
+github:              "daniel-manning/success-failure-haskell"
 license:             BSD3
-author:              "Author name here"
+author:              "Daniel Manning"
 maintainer:          "example@example.com"
 copyright:           "2019 Author name here"
 
@@ -21,8 +21,9 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
-- validation >= 1.1
-- text >= 1.2.4.0
+- validation
+- text
+- lens
 
 library:
   source-dirs: src

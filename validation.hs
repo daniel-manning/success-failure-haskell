@@ -8,6 +8,7 @@ import qualified Data.Text.IO as T
 import Data.Text (Text)
 import Data.List.NonEmpty (NonEmpty ((:|)))
 import qualified Data.List.NonEmpty as NE
+import Control.Lens
 
 
 newtype Error = Error (NonEmpty Text)
@@ -57,7 +58,6 @@ validatePassword (Password password) =
       Success password2 -> requireAlphaNum password2
                           *> checkPasswordLength password2
 
-
 validateUsername :: Username -> Validation Error Username
 validateUsername (Username username) =
   case (cleanWhitespace username) of
@@ -65,19 +65,17 @@ validateUsername (Username username) =
       Success username2 -> requireAlphaNum username2
                           *> checkUsernameLength username2
 
+mapFailure :: (e1 -> e2) -> Validation e1 a -> Validation e2 a
+mapFailure f (Failure err) = Failure (f err)
+mapFailure _ (Success x)   = Success x
+
 passwordErrors :: Password -> Validation Error Password
 passwordErrors password =
-    case validatePassword password of
-        Failure err -> Failure (constructError "Invalid password:"
-                                <> err)
-        Success password2 -> Success password2
+    mapFailure (\err -> constructError "Invalid password:" <> err) (validatePassword password)
 
 usernameErrors :: Username -> Validation Error Username
 usernameErrors username =
-    case validateUsername username of
-        Failure err -> Failure (constructError "Invalid username:"
-                                <> err)
-        Success username -> Success username
+    mapFailure (\err -> constructError "Invalid username:" <> err) (validateUsername username)
 
 makeUser :: Username -> Password -> Validation Error User
 makeUser username password = User
