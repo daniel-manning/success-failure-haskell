@@ -77,10 +77,10 @@ usernameErrors :: Username -> Validation Error Username
 usernameErrors username =
     mapFailure (\err -> constructError "Invalid username:" <> err) (validateUsername username)
 
-makeUser :: Username -> Password -> Validation Error User
-makeUser username password = User
-                             <$> usernameErrors username
-                             <*> passwordErrors password
+makeUser :: Validate v => Username -> Password -> v Error User
+makeUser username password =
+   review _Validation
+     (User <$> usernameErrors username <*> passwordErrors password)
 
 display :: Username -> Password -> IO()
 display name password =
